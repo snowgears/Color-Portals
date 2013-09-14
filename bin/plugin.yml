@@ -1,0 +1,25 @@
+name: ColorPortals
+author: Tanner Embry
+description: Create physical portals in-game!
+version: 1.6
+main: com.pluggertech.colorportals.ColorPortals
+permissions:
+    colorportals.use:
+        description: Allows player to use portals
+        default: op
+    colorportals.create:
+        description: Allows player to create portals
+        default: op
+    colorportals.destroy:
+        description: Allows player to destroy portals
+        default: op
+    colorportals.nodistance:
+        description: Allows player to bypass max/min portal distance
+        default: op
+commands:
+   color:
+      description: Different commands pertaining to plugin
+      usage: /<command>
+   cp:
+      description: Different commands pertaining to plugin
+      usage: /<command>

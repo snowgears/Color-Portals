@@ -1,0 +1,14 @@
+# Thanks for downloading ColorPortals! #
+# Please tell me what you think! #
+
+usePermissions: true
+
+maxPortalsPerGroup: 5
+
+# Leave These At 0 To Disregard Distance #
+minDistanceBetweenPortals: 0
+maxDistanceBetweenPortals: 0
+
+ServerPortals:
+   pingRate: 600
+   
