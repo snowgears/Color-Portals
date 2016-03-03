@@ -118,10 +118,10 @@ public class Portal implements Comparable<Portal> {
         }
         ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
             public void run() {
-                warpLocation.getWorld().playSound(warpLocation, Sound.ENDERMAN_TELEPORT, 1.0F, 0.5F);
+                warpLocation.getWorld().playSound(warpLocation, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0F, 0.5F);
             }
         }, 2L);
-        linkedPortal.getWarpLocation().getWorld().playSound(linkedPortal.getWarpLocation(), Sound.ENDERMAN_TELEPORT, 1.0F, 0.5F);
+        linkedPortal.getWarpLocation().getWorld().playSound(linkedPortal.getWarpLocation(), Sound.ENTITY_ENDERMEN_TELEPORT, 1.0F, 0.5F);
     }
 
     public Collection<Location> getOccupiedLocations() {
