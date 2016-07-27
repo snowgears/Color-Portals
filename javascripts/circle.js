@@ -19,7 +19,7 @@ function animateFirstStep(){
         .delay(0)            
         .duration(1000)
         .attr("r", 10)
-        .each("end", animateSecondStep);
+        .on("end", animateSecondStep);
 };
 
 function animateSecondStep(){
