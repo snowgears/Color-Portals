@@ -98,16 +98,18 @@ public class PortalListener implements Listener {
         }
 
         Block buttonBlock = keyBlock.getRelative(BlockFace.DOWN);
-        if (!(buttonBlock.getType() == Material.STONE_BUTTON || buttonBlock.getType() == Material.WOOD_BUTTON))
+        if (!buttonBlock.getType().name().contains("BUTTON"))
             return false;
         Block plateBlock = bottomMid.getRelative(BlockFace.UP);
-        return plateBlock.getType() == Material.STONE_PLATE || plateBlock.getType() == Material.WOOD_PLATE || plateBlock.getType() == Material.IRON_PLATE || plateBlock.getType() == Material.GOLD_PLATE;
+        return (plateBlock.getType().name().contains("PRESSURE_PLATE"));
 
     }
 
     public boolean checkPortalDistance(Location currentLoc, Player player, int channel, DyeColor color) {
         if (plugin.getMinDistance() != 0 || plugin.getMaxDistance() != 0) {
-            if (plugin.getUsePerms() && !player.hasPermission("colorportals.nodistance")) {
+            if (plugin.getUsePerms() && player.hasPermission("colorportals.nodistance")) {
+                return true; }
+            else {
                 ArrayList<Portal> portals = plugin.getPortalHandler().getPortalFamily(channel, color);
                 if (portals.size() != 0) {
                     Portal toConnect = portals.get(portals.size() - 1);
