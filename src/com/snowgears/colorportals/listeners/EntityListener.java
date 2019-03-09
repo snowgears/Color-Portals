@@ -148,7 +148,7 @@ public class EntityListener implements Listener {
         Player player = event.getPlayer();
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
-        if (!(event.getClickedBlock().getType().name().contains("BUTTON"))
+        if (!event.getClickedBlock().getType().name().contains("BUTTON"))
             return;
 
         Block portalKeyBlock = event.getClickedBlock().getRelative(BlockFace.UP);
