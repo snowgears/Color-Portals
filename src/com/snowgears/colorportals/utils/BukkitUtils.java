@@ -98,7 +98,7 @@ public class BukkitUtils {
      * - DyeColor: the color of the (wool) block
      */
     public DyeColor getWoolColor(Block block) {
-        if (block.getType() != Material.WOOL)
+        if (!block.getType().name().contains("WOOL"))
             return null;
 
         Wool wool = (Wool) block.getState().getData();
