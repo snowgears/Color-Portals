@@ -53,6 +53,7 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+        <finalName>${project.artifactId}</finalName>
     </build>
 
     <repositories>
