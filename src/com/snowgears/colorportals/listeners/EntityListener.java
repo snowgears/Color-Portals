@@ -46,7 +46,7 @@ public class EntityListener implements Listener {
         if (event.getBlock().getType() == Material.WALL_SIGN) {
             Sign s = (Sign) event.getBlock().getState().getData();
             Block attachedBlock = event.getBlock().getRelative(s.getAttachedFace());
-            if (attachedBlock.getType() == Material.WOOL && attachedBlock.getLocation().clone().add(0, -3, 0).getBlock().getType() == Material.WOOL) {
+            if (attachedBlock.getType().name().contains("WOOL") && attachedBlock.getLocation().clone().add(0, -3, 0).getBlock().getType().name().contains("WOOL")) {
                 if (!plugin.getPortalListener().frameIsComplete(event.getBlock().getLocation())) {
                     event.getPlayer().sendMessage(ChatColor.RED + "Your portal's frame is either not complete or it is missing the button and/or pressure plate.");
                     return;
@@ -111,10 +111,9 @@ public class EntityListener implements Listener {
         Material blockType = event.getBlock().getType();
         if (blockType == Material.WALL_SIGN) {
             portal = plugin.getPortalHandler().getPortal(event.getBlock().getLocation());
-        } else if (blockType == Material.WOOL) {
+        } else if (blockType.name().contains("WOOL")) {
             portal = plugin.getPortalHandler().getPortalByFrameLocation(event.getBlock().getLocation());
-        } else if (blockType == Material.WOOD_BUTTON || blockType == Material.STONE_BUTTON
-                || blockType == Material.WOOD_PLATE || blockType == Material.STONE_PLATE || blockType == Material.IRON_PLATE || blockType == Material.GOLD_PLATE) {
+        } else if (blockType.name().contains("BUTTON") || blockType.name().contains("PRESSURE_PLATE")) {
             portal = plugin.getPortalHandler().getPortalByFrameLocation(event.getBlock().getLocation());
         }
 
@@ -149,7 +148,7 @@ public class EntityListener implements Listener {
         Player player = event.getPlayer();
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
-        if (!(event.getClickedBlock().getType() == Material.STONE_BUTTON || event.getClickedBlock().getType() == Material.WOOD_BUTTON))
+        if (!event.getClickedBlock().getType().name().contains("BUTTON"))
             return;
 
         Block portalKeyBlock = event.getClickedBlock().getRelative(BlockFace.UP);
@@ -225,8 +224,8 @@ public class EntityListener implements Listener {
             if(block.getType() == Material.WALL_SIGN){
                 portal = plugin.getPortalHandler().getPortal(block.getLocation());
             }
-            else if (block.getType() == Material.WOOL || block.getType() == Material.WOOD_BUTTON || block.getType() == Material.STONE_BUTTON
-                    || block.getType() == Material.WOOD_PLATE || block.getType() == Material.STONE_PLATE || block.getType() == Material.IRON_PLATE || block.getType() == Material.GOLD_PLATE) {
+            else if (block.getType().name().contains("WOOL") || block.getType().name().contains("BUTTON")
+                    || block.getType().name().contains("PRESSURE_PLATE")) {
                 portal = plugin.getPortalHandler().getPortalByFrameLocation(block.getLocation());
             }
 
@@ -244,7 +243,7 @@ public class EntityListener implements Listener {
     public void onArrowHit(EntityInteractEvent event) {
         if (!(event.getEntity() instanceof Arrow))
             return;
-        if (event.getBlock().getType() != Material.WOOD_BUTTON)
+        if (event.getBlock().getType().name().startsWith("STONE"))
             return;
         Arrow shot = (Arrow) event.getEntity();
         if (!(shot.getShooter() instanceof Player))
