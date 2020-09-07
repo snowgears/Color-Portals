@@ -7,23 +7,20 @@ import com.snowgears.colorportals.events.DestroyPortalEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.material.Sign;
 
 import java.util.ArrayList;
 
-
 public class PortalListener implements Listener {
 
-
     public ColorPortals plugin = ColorPortals.getPlugin();
-
     public PortalListener(ColorPortals instance) {
         plugin = instance;
     }
@@ -45,10 +42,10 @@ public class PortalListener implements Listener {
     @EventHandler
     public void signDetachCheck(BlockPhysicsEvent event) {
         Block b = event.getBlock();
-        if (b.getType() == Material.WALL_SIGN) {
+        if (b.getBlockData() instanceof WallSign) {
             Portal portal = plugin.getPortalHandler().getPortal(b.getLocation());
             if (portal != null) {
-                BlockFace face = ((Sign) b.getState().getData()).getAttachedFace();
+                BlockFace face = ((WallSign) b.getBlockData()).getFacing().getOppositeFace();
                 if (!event.getBlock().getRelative(face).getType().isSolid()) {
                     if (plugin.getPortalProtection()) {
                         event.setCancelled(true);
@@ -66,9 +63,11 @@ public class PortalListener implements Listener {
     }
 
     public boolean frameIsComplete(Location signLocation) {
-
-        Sign sign = (Sign) signLocation.getBlock().getState().getData();
-        Block keyBlock = signLocation.getBlock().getRelative(sign.getAttachedFace());
+        Block signBlock = signLocation.getBlock();
+        if(!(signBlock.getBlockData() instanceof WallSign))
+            return false;
+        WallSign sign = (WallSign) signBlock.getBlockData();
+        Block keyBlock = signBlock.getRelative(sign.getFacing().getOppositeFace());
         DyeColor color = plugin.getBukkitUtils().getWoolColor(keyBlock);
         if (color == null)
             return false;
@@ -98,11 +97,13 @@ public class PortalListener implements Listener {
         }
 
         Block buttonBlock = keyBlock.getRelative(BlockFace.DOWN);
-        if (!(buttonBlock.getType() == Material.STONE_BUTTON || buttonBlock.getType() == Material.WOOD_BUTTON))
+        if(!Tag.BUTTONS.isTagged(buttonBlock.getType()))
             return false;
         Block plateBlock = bottomMid.getRelative(BlockFace.UP);
-        return plateBlock.getType() == Material.STONE_PLATE || plateBlock.getType() == Material.WOOD_PLATE || plateBlock.getType() == Material.IRON_PLATE || plateBlock.getType() == Material.GOLD_PLATE;
+        if(!Tag.PRESSURE_PLATES.isTagged(plateBlock.getType()))
+            return false;
 
+        return true;
     }
 
     public boolean checkPortalDistance(Location currentLoc, Player player, int channel, DyeColor color) {

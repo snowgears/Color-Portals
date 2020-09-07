@@ -11,9 +11,9 @@ package com.snowgears.colorportals;
 
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -80,13 +80,13 @@ public class PortalHandler {
 
     //TODO bug here. Will always prioritize finding north sign first and would return null if multiple signs on portal
     public Portal getPortalByKeyBlock(Block portalKeyBlock) {
-        if (portalKeyBlock.getRelative(BlockFace.NORTH).getType() == Material.WALL_SIGN) {
+        if (portalKeyBlock.getRelative(BlockFace.NORTH).getBlockData() instanceof WallSign) {
             return plugin.getPortalHandler().getPortal(portalKeyBlock.getRelative(BlockFace.NORTH).getLocation());
-        } else if (portalKeyBlock.getRelative(BlockFace.EAST).getType() == Material.WALL_SIGN) {
+        } else if (portalKeyBlock.getRelative(BlockFace.EAST).getBlockData() instanceof WallSign) {
             return plugin.getPortalHandler().getPortal(portalKeyBlock.getRelative(BlockFace.EAST).getLocation());
-        } else if (portalKeyBlock.getRelative(BlockFace.SOUTH).getType() == Material.WALL_SIGN) {
+        } else if (portalKeyBlock.getRelative(BlockFace.SOUTH).getBlockData() instanceof WallSign) {
             return plugin.getPortalHandler().getPortal(portalKeyBlock.getRelative(BlockFace.SOUTH).getLocation());
-        } else if (portalKeyBlock.getRelative(BlockFace.WEST).getType() == Material.WALL_SIGN) {
+        } else if (portalKeyBlock.getRelative(BlockFace.WEST).getBlockData() instanceof WallSign) {
             return plugin.getPortalHandler().getPortal(portalKeyBlock.getRelative(BlockFace.WEST).getLocation());
         }
         return null;
@@ -212,7 +212,7 @@ public class PortalHandler {
                 Location signLocation = locationFromString(config.getString("portals." + portalColor + "." + portalChannel + ".location"));
                 Block signBlock = signLocation.getBlock();
 
-                if (signBlock.getType() == Material.WALL_SIGN) {
+                if (signBlock.getBlockData() instanceof WallSign) {
 
                     DyeColor color = DyeColor.valueOf(portalColor);
 

@@ -12,13 +12,18 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.material.Wool;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class BukkitUtils {
 
+    private HashMap<Material, DyeColor> woolColorMap = new HashMap<>();
+
     //takes two locations, returns a blockface and a number
+    public BukkitUtils(){
+        populateWoolColorMap();
+    }
 
     /**
      * Takes two locations and calculates all cardinal distances
@@ -92,17 +97,39 @@ public class BukkitUtils {
         return true;
     }
 
+    public boolean isWool(Material material) {
+        if(woolColorMap.containsKey(material)) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Gets the color from a (wool) block
      * Return:
      * - DyeColor: the color of the (wool) block
      */
     public DyeColor getWoolColor(Block block) {
-        if (block.getType() != Material.WOOL)
-            return null;
+        return woolColorMap.get(block.getType());
+    }
 
-        Wool wool = (Wool) block.getState().getData();
-        return wool.getColor();
+    private void populateWoolColorMap(){
+        woolColorMap.put(Material.RED_WOOL, DyeColor.RED);
+        woolColorMap.put(Material.WHITE_WOOL, DyeColor.WHITE);
+        woolColorMap.put(Material.BLACK_WOOL, DyeColor.BLACK);
+        woolColorMap.put(Material.BLUE_WOOL, DyeColor.BLUE);
+        woolColorMap.put(Material.BROWN_WOOL, DyeColor.BROWN);
+        woolColorMap.put(Material.CYAN_WOOL, DyeColor.CYAN);
+        woolColorMap.put(Material.GRAY_WOOL, DyeColor.GRAY);
+        woolColorMap.put(Material.GREEN_WOOL, DyeColor.GREEN);
+        woolColorMap.put(Material.LIGHT_BLUE_WOOL, DyeColor.LIGHT_BLUE);
+        woolColorMap.put(Material.LIGHT_GRAY_WOOL, DyeColor.LIGHT_GRAY);
+        woolColorMap.put(Material.LIME_WOOL, DyeColor.LIME);
+        woolColorMap.put(Material.MAGENTA_WOOL, DyeColor.MAGENTA);
+        woolColorMap.put(Material.ORANGE_WOOL, DyeColor.ORANGE);
+        woolColorMap.put(Material.PINK_WOOL, DyeColor.PINK);
+        woolColorMap.put(Material.PURPLE_WOOL, DyeColor.PURPLE);
+        woolColorMap.put(Material.YELLOW_WOOL, DyeColor.YELLOW);
     }
 
     //TODO NEED TO REDO WHOLE COLORPORTALS NAME BY UUID SYSTEM

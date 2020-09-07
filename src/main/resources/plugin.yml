@@ -1,7 +1,8 @@
 name: ColorPortals
 author: Tanner Embry (SnowGears)
 description: Create physical portals in-game!
-version: 1.6.2
+version: 1.6.3
+api-version: 1.16
 main: com.snowgears.colorportals.ColorPortals
 permissions:
     colorportals.use:

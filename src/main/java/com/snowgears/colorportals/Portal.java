@@ -5,11 +5,15 @@ import com.snowgears.colorportals.utils.BukkitUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Sign;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.material.Sign;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.UUID;
 
 
 public class Portal implements Comparable<Portal> {
@@ -41,8 +45,8 @@ public class Portal implements Comparable<Portal> {
         ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
             public void run() {
 
-                if (signLocation.getBlock().getType() == Material.WALL_SIGN) {
-                    org.bukkit.block.Sign sign = (org.bukkit.block.Sign) signLocation.getBlock().getState();
+                if (signLocation.getBlock().getBlockData() instanceof WallSign) {
+                    Sign sign = (Sign) signLocation.getBlock().getState();
                     sign.setLine(0, name);
                     sign.setLine(1, channel + "." + node);
 
@@ -64,8 +68,8 @@ public class Portal implements Comparable<Portal> {
         ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
             public void run() {
                 //first update the sign (if the sign is still on the portal)
-                if (signLocation.getBlock().getType() == Material.WALL_SIGN) {
-                    org.bukkit.block.Sign sign = (org.bukkit.block.Sign) signLocation.getBlock().getState();
+                if (signLocation.getBlock().getBlockData() instanceof WallSign) {
+                    Sign sign = (Sign) signLocation.getBlock().getState();
                     sign.setLine(0, ChatColor.RED + "PORTAL");
                     sign.setLine(1, ChatColor.RED + "DESTROYED");
                     sign.setLine(2, "");
@@ -118,10 +122,10 @@ public class Portal implements Comparable<Portal> {
         }
         ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
             public void run() {
-                warpLocation.getWorld().playSound(warpLocation, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0F, 0.5F);
+                warpLocation.getWorld().playSound(warpLocation, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0F, 0.5F);
             }
         }, 2L);
-        linkedPortal.getWarpLocation().getWorld().playSound(linkedPortal.getWarpLocation(), Sound.ENTITY_ENDERMEN_TELEPORT, 1.0F, 0.5F);
+        linkedPortal.getWarpLocation().getWorld().playSound(linkedPortal.getWarpLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0F, 0.5F);
     }
 
     public Collection<Location> getOccupiedLocations() {
@@ -222,8 +226,11 @@ public class Portal implements Comparable<Portal> {
 
     private void defineLocations() {
         Block signBlock = signLocation.getBlock();
-        Sign sign = (Sign) signBlock.getState().getData();
-        warpLocation = signBlock.getRelative(sign.getAttachedFace()).getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN).getLocation();
+        if(!(signBlock.getBlockData() instanceof WallSign))
+            return;
+
+        WallSign sign = (WallSign) signBlock.getBlockData();
+        warpLocation = signBlock.getRelative(sign.getFacing().getOppositeFace()).getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN).getLocation();
         warpLocation.add(0.5, 0, 0.5);
         warpLocation.setYaw(ColorPortals.getPlugin().getBukkitUtils().faceToYaw(sign.getFacing()) + 180F);
 
@@ -234,7 +241,7 @@ public class Portal implements Comparable<Portal> {
         else
             travel = BlockFace.NORTH;
 
-        Block midTop = signBlock.getRelative(sign.getAttachedFace());
+        Block midTop = signBlock.getRelative(sign.getFacing().getOppositeFace());
         Block midUpper = midTop.getRelative(BlockFace.DOWN);
         Block midLower = midTop.getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN);
         Block midBottom = midTop.getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN);

@@ -6,18 +6,13 @@ import com.snowgears.colorportals.listeners.PortalListener;
 import com.snowgears.colorportals.utils.BukkitUtils;
 import com.snowgears.colorportals.utils.Metrics;
 import org.bukkit.ChatColor;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class ColorPortals extends JavaPlugin {
 

@@ -1,7 +1,4 @@
-# Eclipse stuff
-/.classpath
-/.project
-/.settings
-
-# Mac filesystem dust
+.idea/
+ColorPortals.iml
+target/
 .DS_Store

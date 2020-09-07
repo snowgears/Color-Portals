@@ -1,16 +1,13 @@
 package com.snowgears.colorportals.listeners;
 
-
 import com.snowgears.colorportals.ColorPortals;
 import com.snowgears.colorportals.Portal;
 import com.snowgears.colorportals.events.CreatePortalEvent;
 import com.snowgears.colorportals.events.DestroyPortalEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.DyeColor;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -23,16 +20,13 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.Sign;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
 
-
 public class EntityListener implements Listener {
-
 
     public ColorPortals plugin = ColorPortals.getPlugin();
     private HashMap<UUID, Boolean> noTeleportEntities = new HashMap<UUID, Boolean>();
@@ -43,10 +37,11 @@ public class EntityListener implements Listener {
 
     @EventHandler
     public void onSignWrite(SignChangeEvent event) {
-        if (event.getBlock().getType() == Material.WALL_SIGN) {
-            Sign s = (Sign) event.getBlock().getState().getData();
-            Block attachedBlock = event.getBlock().getRelative(s.getAttachedFace());
-            if (attachedBlock.getType() == Material.WOOL && attachedBlock.getLocation().clone().add(0, -3, 0).getBlock().getType() == Material.WOOL) {
+        if (event.getBlock().getBlockData() instanceof WallSign) {
+            WallSign s = (WallSign) event.getBlock().getBlockData();
+            BlockFace attachedFace = s.getFacing().getOppositeFace();
+            Block attachedBlock = event.getBlock().getRelative(attachedFace);
+            if (plugin.getBukkitUtils().isWool(attachedBlock.getType()) && plugin.getBukkitUtils().isWool(attachedBlock.getLocation().clone().add(0, -3, 0).getBlock().getType())) {
                 if (!plugin.getPortalListener().frameIsComplete(event.getBlock().getLocation())) {
                     event.getPlayer().sendMessage(ChatColor.RED + "Your portal's frame is either not complete or it is missing the button and/or pressure plate.");
                     return;
@@ -56,12 +51,13 @@ public class EntityListener implements Listener {
                     event.setCancelled(true);
                     return;
                 }
-                Portal p = plugin.getPortalHandler().getPortal(attachedBlock.getRelative(s.getAttachedFace()).getLocation());
+                Portal p = plugin.getPortalHandler().getPortal(attachedBlock.getRelative(attachedFace).getLocation());
                 if (p != null) {
                     event.getPlayer().sendMessage(ChatColor.RED + "You can not put another sign on the top of this portal.");
                     event.setCancelled(true);
+                    ItemStack dropSign = new ItemStack(event.getBlock().getType());
                     event.getBlock().setType(Material.AIR);
-                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(Material.SIGN));
+                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), dropSign);
                 }
 
                 String name = event.getLine(0);
@@ -108,13 +104,12 @@ public class EntityListener implements Listener {
         Player player = event.getPlayer();
         Portal portal = null;
 
-        Material blockType = event.getBlock().getType();
-        if (blockType == Material.WALL_SIGN) {
+        Block block = event.getBlock();
+        if (block.getBlockData() instanceof WallSign) {
             portal = plugin.getPortalHandler().getPortal(event.getBlock().getLocation());
-        } else if (blockType == Material.WOOL) {
+        } else if (plugin.getBukkitUtils().isWool(block.getType())) {
             portal = plugin.getPortalHandler().getPortalByFrameLocation(event.getBlock().getLocation());
-        } else if (blockType == Material.WOOD_BUTTON || blockType == Material.STONE_BUTTON
-                || blockType == Material.WOOD_PLATE || blockType == Material.STONE_PLATE || blockType == Material.IRON_PLATE || blockType == Material.GOLD_PLATE) {
+        } else if (Tag.BUTTONS.isTagged(block.getType()) || Tag.PRESSURE_PLATES.isTagged(block.getType())) {
             portal = plugin.getPortalHandler().getPortalByFrameLocation(event.getBlock().getLocation());
         }
 
@@ -149,7 +144,7 @@ public class EntityListener implements Listener {
         Player player = event.getPlayer();
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
-        if (!(event.getClickedBlock().getType() == Material.STONE_BUTTON || event.getClickedBlock().getType() == Material.WOOD_BUTTON))
+        if (!Tag.BUTTONS.isTagged(event.getClickedBlock().getType()))
             return;
 
         Block portalKeyBlock = event.getClickedBlock().getRelative(BlockFace.UP);
@@ -222,11 +217,10 @@ public class EntityListener implements Listener {
 
             Block block = blockIterator.next();
             Portal portal = null;
-            if(block.getType() == Material.WALL_SIGN){
+            if(block.getBlockData() instanceof WallSign){
                 portal = plugin.getPortalHandler().getPortal(block.getLocation());
             }
-            else if (block.getType() == Material.WOOL || block.getType() == Material.WOOD_BUTTON || block.getType() == Material.STONE_BUTTON
-                    || block.getType() == Material.WOOD_PLATE || block.getType() == Material.STONE_PLATE || block.getType() == Material.IRON_PLATE || block.getType() == Material.GOLD_PLATE) {
+            else if (plugin.getBukkitUtils().isWool(block.getType()) || Tag.BUTTONS.isTagged(block.getType()) || Tag.PRESSURE_PLATES.isTagged(block.getType())) {
                 portal = plugin.getPortalHandler().getPortalByFrameLocation(block.getLocation());
             }
 
@@ -244,7 +238,7 @@ public class EntityListener implements Listener {
     public void onArrowHit(EntityInteractEvent event) {
         if (!(event.getEntity() instanceof Arrow))
             return;
-        if (event.getBlock().getType() != Material.WOOD_BUTTON)
+        if (!Tag.WOODEN_BUTTONS.isTagged(event.getBlock().getType()))
             return;
         Arrow shot = (Arrow) event.getEntity();
         if (!(shot.getShooter() instanceof Player))
