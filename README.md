@@ -3,8 +3,7 @@ Color-Portals
 
 Minecraft Bukkit Plugin: Color Portals
 
-Main Page: http://dev.bukkit.org/bukkit-plugins/color-portals/
-
+Main Page: https://www.spigotmc.org/resources/color-portals.5546/
 
 Color Portals lets users create portals in game with little effort and no commands to type!
 

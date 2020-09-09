@@ -7,7 +7,6 @@ import com.snowgears.colorportals.events.DestroyPortalEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
-import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.WallSign;
@@ -96,12 +95,13 @@ public class PortalListener implements Listener {
                 return false;
         }
 
-        Block buttonBlock = keyBlock.getRelative(BlockFace.DOWN);
-        if(!Tag.BUTTONS.isTagged(buttonBlock.getType()))
-            return false;
-        Block plateBlock = bottomMid.getRelative(BlockFace.UP);
-        if(!Tag.PRESSURE_PLATES.isTagged(plateBlock.getType()))
-            return false;
+        //dont check that button or plate are there
+//        Block buttonBlock = keyBlock.getRelative(BlockFace.DOWN);
+//        if(!Tag.BUTTONS.isTagged(buttonBlock.getType()))
+//            return false;
+//        Block plateBlock = bottomMid.getRelative(BlockFace.UP);
+//        if(!Tag.PRESSURE_PLATES.isTagged(plateBlock.getType()))
+//            return false;
 
         return true;
     }

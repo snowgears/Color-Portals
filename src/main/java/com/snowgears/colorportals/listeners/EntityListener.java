@@ -1,5 +1,6 @@
 package com.snowgears.colorportals.listeners;
 
+import com.google.common.base.Predicates;
 import com.snowgears.colorportals.ColorPortals;
 import com.snowgears.colorportals.Portal;
 import com.snowgears.colorportals.events.CreatePortalEvent;
@@ -10,21 +11,21 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class EntityListener implements Listener {
 
@@ -109,9 +110,11 @@ public class EntityListener implements Listener {
             portal = plugin.getPortalHandler().getPortal(event.getBlock().getLocation());
         } else if (plugin.getBukkitUtils().isWool(block.getType())) {
             portal = plugin.getPortalHandler().getPortalByFrameLocation(event.getBlock().getLocation());
-        } else if (Tag.BUTTONS.isTagged(block.getType()) || Tag.PRESSURE_PLATES.isTagged(block.getType())) {
-            portal = plugin.getPortalHandler().getPortalByFrameLocation(event.getBlock().getLocation());
         }
+        //dont break portals if button or plate is broken
+        //else if (Tag.BUTTONS.isTagged(block.getType()) || Tag.PRESSURE_PLATES.isTagged(block.getType())) {
+        //    portal = plugin.getPortalHandler().getPortalByFrameLocation(event.getBlock().getLocation());
+        //}
 
         if (portal != null) {
             if (plugin.getUsePerms() && !event.getPlayer().hasPermission("colorportals.destroy")) {
@@ -205,6 +208,42 @@ public class EntityListener implements Listener {
             return;
 
         portal.teleport();
+    }
+
+    @EventHandler
+    public void onRedstoneChange(BlockRedstoneEvent event) {
+        if (!plugin.getWalkOnActivation())
+            return;
+
+        Block b = event.getBlock();
+        if(b.getType() == Material.DETECTOR_RAIL)
+        {
+            //only fire the event if going ON to a detector, not coming OFF one
+            if(event.getOldCurrent() != 0)
+                return;
+
+            //Check if rail is part of a portal
+            Block portalKeyBlock = b.getRelative(BlockFace.UP).getRelative(BlockFace.UP);
+            Portal portal = plugin.getPortalHandler().getPortalByKeyBlock(portalKeyBlock);
+            if (portal == null)
+                return;
+            if (portal.getLinkedPortal() == null)
+                return;
+
+            //Getting nearby minecarts
+            World w = b.getWorld();
+            Predicate minecartFilter = Predicates.instanceOf(Minecart.class);
+            Collection<Entity> minecarts = w.getNearbyEntities(b.getLocation(),1.5,1.5,1.5,minecartFilter);
+
+            if(minecarts.size() == 0)
+            {
+                //If no minecraft were found, ignore.
+                return;
+            }
+
+            Minecart cart = (Minecart) minecarts.iterator().next();
+            portal.teleportMinecart(cart);
+        }
     }
 
     @EventHandler

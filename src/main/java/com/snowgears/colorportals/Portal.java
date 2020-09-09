@@ -8,18 +8,20 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 
-
 public class Portal implements Comparable<Portal> {
 
     private Location signLocation;
     private Location warpLocation;
+    private Location cartWarpLocation;
     private Collection<Location> occupiedLocations;
 
     private UUID creator;
@@ -109,15 +111,54 @@ public class Portal implements Comparable<Portal> {
         ColorPortals.getPlugin().getPortalHandler().deregisterPortal(this);
     }
 
+    //this is called in place of teleport, but specifically for minecarts
+    public void teleportMinecart(Entity cart){
+        if (this.linkedPortal == null)
+            return;
+        if (!ColorPortals.getPlugin().getEntityListener().entityCanBeTeleported(cart))
+            return;
+
+        ArrayList<Entity> passengers = new ArrayList<>();
+        if(!cart.getPassengers().isEmpty()){
+            for(Entity passenger : cart.getPassengers()) {
+                passenger.leaveVehicle();
+                passengers.add(passenger);
+            }
+        }
+        double velocityLength = cart.getVelocity().length();
+        teleportEntity(cart);
+
+        ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
+            public void run() {
+                if(cart != null && !cart.isDead()){
+                    Vector direction = getLinkedPortal().getWarpLocation().getDirection().clone();
+                    direction.multiply(velocityLength);
+                    cart.setVelocity(direction);
+                }
+            }
+        }, 2L);
+
+        ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
+            public void run() {
+                for(Entity passenger : passengers) {
+                    if(passenger != null && !passenger.isDead()) {
+                        passenger.teleport(getLinkedPortal().getWarpLocation());
+                        cart.addPassenger(passenger); //this does not auto teleport the player
+                    }
+                }
+                warpLocation.getWorld().playSound(warpLocation, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0F, 0.5F);
+            }
+        }, 4L);
+
+        linkedPortal.getWarpLocation().getWorld().playSound(linkedPortal.getWarpLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0F, 0.5F);
+    }
+
     public void teleport() {
         if (this.linkedPortal == null)
             return;
         for (Entity e : warpLocation.getChunk().getEntities()) {
             if (e.getLocation().distanceSquared(this.getWarpLocation()) < 0.7) {
-                if (ColorPortals.getPlugin().getEntityListener().entityCanBeTeleported(e)) {
-                    ColorPortals.getPlugin().getEntityListener().addNoTeleportEntity(e);
-                    e.teleport(this.linkedPortal.getWarpLocation());
-                }
+                this.teleportEntity(e);
             }
         }
         ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
@@ -126,6 +167,18 @@ public class Portal implements Comparable<Portal> {
             }
         }, 2L);
         linkedPortal.getWarpLocation().getWorld().playSound(linkedPortal.getWarpLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0F, 0.5F);
+    }
+
+    private boolean teleportEntity(Entity entity){
+        if (ColorPortals.getPlugin().getEntityListener().entityCanBeTeleported(entity)) {
+            ColorPortals.getPlugin().getEntityListener().addNoTeleportEntity(entity);
+            if(entity instanceof Minecart)
+                entity.teleport(this.linkedPortal.getCartWarpLocation());
+            else
+                entity.teleport(this.linkedPortal.getWarpLocation());
+            return true;
+        }
+        return false;
     }
 
     public Collection<Location> getOccupiedLocations() {
@@ -177,6 +230,10 @@ public class Portal implements Comparable<Portal> {
 
     public Location getWarpLocation() {
         return warpLocation;
+    }
+
+    public Location getCartWarpLocation() {
+        return cartWarpLocation;
     }
 
     public String getName() {
@@ -234,6 +291,21 @@ public class Portal implements Comparable<Portal> {
         warpLocation.add(0.5, 0, 0.5);
         warpLocation.setYaw(ColorPortals.getPlugin().getBukkitUtils().faceToYaw(sign.getFacing()) + 180F);
 
+        cartWarpLocation = warpLocation.clone();
+        switch (sign.getFacing()){
+            case NORTH:
+                cartWarpLocation.setZ(cartWarpLocation.getZ()-0.5);
+                break;
+            case EAST:
+                cartWarpLocation.setX(cartWarpLocation.getX()+0.5);
+                break;
+            case SOUTH:
+                cartWarpLocation.setZ(cartWarpLocation.getZ()+0.5);
+                break;
+            case WEST:
+                cartWarpLocation.setX(cartWarpLocation.getX()-0.5);
+                break;
+        }
 
         BlockFace travel;
         if (sign.getFacing() == BlockFace.NORTH || sign.getFacing() == BlockFace.SOUTH)

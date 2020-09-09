@@ -4,21 +4,17 @@
 
 usePermissions: false
 
-
 # If this is true, players will activate portals by stepping on the pressure plate #
 # This will also allow mobs and items to trigger portals #
-walkOnActivation: false
-
+walkOnActivation: true
 
 # If this is true, players can't destroy other player's portals (except OPs) #
 # This will also protect portals from being destroyed by TnT and Creepers #
 portalProtection: true
 
-
 # Maximum amount of portals allowed on one chain (color, channel) #
 # Set this to 0 for infinite portals per chain #
 maxPortalsPerGroup: 0
-
 
 # Set these to 0 to ignore distance between portals #
 minDistanceBetweenPortals: 0
