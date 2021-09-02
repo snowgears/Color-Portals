@@ -18,6 +18,8 @@ permissions:
     colorportals.nodistance:
         description: Allows player to bypass max/min portal distance
         default: op
+    colorportals.max.*: Player is only allowed to make * number of portals (* is unlimited)
+        default: op
 commands:
    portal:
       description: Different commands pertaining to plugin

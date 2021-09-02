@@ -15,6 +15,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,6 +30,7 @@ public class PortalHandler {
     public ColorPortals plugin = ColorPortals.getPlugin();
 
     private HashMap<Location, Portal> allPortals = new HashMap<Location, Portal>();
+    private HashMap<UUID, Integer> createdPortalAmounts = new HashMap<UUID, Integer>();
 
     public PortalHandler(ColorPortals instance) {
         plugin = instance;
@@ -39,6 +42,13 @@ public class PortalHandler {
 
     public void registerPortal(Portal portal) {
         allPortals.put(portal.getSignLocation(), portal);
+        if(createdPortalAmounts.containsKey(portal.getCreator())){
+            int amt = createdPortalAmounts.get(portal.getCreator());
+            createdPortalAmounts.put(portal.getCreator(), amt + 1);
+        }
+        else{
+            createdPortalAmounts.put(portal.getCreator(), 1);
+        }
 
         ArrayList<Portal> portalFamily = this.getPortalFamily(portal);
         if (portalFamily.size() == 1) {
@@ -52,6 +62,10 @@ public class PortalHandler {
 
     //this method should only be called from the portal class when removing portals
     public void deregisterPortal(Portal portal) {
+        if(createdPortalAmounts.containsKey(portal.getCreator())){
+            int amt = createdPortalAmounts.get(portal.getCreator());
+            createdPortalAmounts.put(portal.getCreator(), amt - 1);
+        }
         if (allPortals.containsKey(portal.getSignLocation())) {
             allPortals.remove(portal.getSignLocation());
         }
@@ -59,6 +73,12 @@ public class PortalHandler {
 
     public Collection<Portal> getAllPortals() {
         return allPortals.values();
+    }
+
+    public int getPortalsCreated(UUID player){
+        if(createdPortalAmounts.containsKey(player))
+            return createdPortalAmounts.get(player);
+        return 0;
     }
 
     public Portal getPortalByFrameLocation(Location location) {
@@ -269,6 +289,24 @@ public class PortalHandler {
                 }
             }
         }
+    }
+
+    public int getMaxPortalsPlayerCanBuild(Player player){
+        if(!plugin.getUsePerms())
+            return -1;
+        int buildPermissionNumber = -1;
+        for(PermissionAttachmentInfo permInfo : player.getEffectivePermissions()){
+            if(permInfo.getPermission().equals("colorportals.max.*"))
+                return -1;
+            if(permInfo.getPermission().contains("colorportals.max")){
+                try {
+                    int tempNum = Integer.parseInt(permInfo.getPermission().substring(permInfo.getPermission().lastIndexOf(".") + 1));
+                    if(tempNum > buildPermissionNumber)
+                        buildPermissionNumber = tempNum;
+                } catch (Exception e) {}
+            }
+        }
+        return buildPermissionNumber;
     }
 
     private String locationToString(Location loc) {

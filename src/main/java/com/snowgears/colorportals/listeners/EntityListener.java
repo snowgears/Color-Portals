@@ -51,6 +51,16 @@ public class EntityListener implements Listener {
                     event.setCancelled(true);
                     return;
                 }
+                int maxBuildNum = plugin.getPortalHandler().getMaxPortalsPlayerCanBuild(event.getPlayer());
+                if(maxBuildNum != -1) {
+                    int portalsLeft = maxBuildNum - plugin.getPortalHandler().getPortalsCreated(event.getPlayer().getUniqueId());
+                    if (portalsLeft < 1) {
+                        event.getPlayer().sendMessage(ChatColor.DARK_RED + "You have reached your limit of "+maxBuildNum+" portals.");
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+
                 Portal p = plugin.getPortalHandler().getPortal(attachedBlock.getRelative(attachedFace).getLocation());
                 if (p != null) {
                     event.getPlayer().sendMessage(ChatColor.RED + "You can not put another sign on the top of this portal.");
