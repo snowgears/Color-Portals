@@ -1,19 +1,19 @@
 name: ColorPortals
 author: Tanner Embry (SnowGears)
 description: Create physical portals in-game!
-version: 1.6.5
+version: 1.6.6
 api-version: 1.13
 main: com.snowgears.colorportals.ColorPortals
 softdepend: [Multiverse-Core]
 permissions:
-    colorportals.use:
-        description: Allows player to use portals
+    colorportals.use.*:
+        description: Allows player to use all color portals
         default: op
-    colorportals.create:
-        description: Allows player to create portals
+    colorportals.create.*:
+        description: Allows player to create all color portals
         default: op
-    colorportals.destroy:
-        description: Allows player to destroy portals
+    colorportals.destroy.*:
+        description: Allows player to destroy all color portals
         default: op
     colorportals.nodistance:
         description: Allows player to bypass max/min portal distance

@@ -115,7 +115,7 @@ public class Portal implements Comparable<Portal> {
     public void teleportMinecart(Entity cart){
         if (this.linkedPortal == null)
             return;
-        if (!ColorPortals.getPlugin().getEntityListener().entityCanBeTeleported(cart))
+        if (!ColorPortals.getPlugin().getEntityListener().entityCanBeTeleported(cart, this))
             return;
 
         ArrayList<Entity> passengers = new ArrayList<>();
@@ -126,31 +126,40 @@ public class Portal implements Comparable<Portal> {
             }
         }
         double velocityLength = cart.getVelocity().length();
-        teleportEntity(cart);
 
-        ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
-            public void run() {
-                if(cart != null && !cart.isDead()){
-                    Vector direction = getLinkedPortal().getWarpLocation().getDirection().clone();
-                    direction.multiply(velocityLength);
-                    cart.setVelocity(direction);
-                }
-            }
-        }, 2L);
+        if(ColorPortals.getPlugin().getAllowMinecarts()) {
+            teleportEntity(cart);
 
-        ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
-            public void run() {
-                for(Entity passenger : passengers) {
-                    if(passenger != null && !passenger.isDead()) {
-                        passenger.teleport(getLinkedPortal().getWarpLocation());
-                        cart.addPassenger(passenger); //this does not auto teleport the player
+            ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
+                public void run() {
+                    if (cart != null && !cart.isDead()) {
+                        Vector direction = getLinkedPortal().getWarpLocation().getDirection().clone();
+                        direction.multiply(velocityLength);
+                        cart.setVelocity(direction);
                     }
                 }
-                warpLocation.getWorld().playSound(warpLocation, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0F, 0.5F);
-            }
-        }, 4L);
+            }, 2L);
 
-        linkedPortal.getWarpLocation().getWorld().playSound(linkedPortal.getWarpLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0F, 0.5F);
+            ColorPortals.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(ColorPortals.getPlugin(), new Runnable() {
+                public void run() {
+                    for (Entity passenger : passengers) {
+                        if (passenger != null && !passenger.isDead()) {
+                            passenger.teleport(getLinkedPortal().getWarpLocation());
+                            cart.addPassenger(passenger); //this does not auto teleport the player
+                        }
+                    }
+                    warpLocation.getWorld().playSound(warpLocation, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0F, 0.5F);
+                }
+            }, 4L);
+
+            linkedPortal.getWarpLocation().getWorld().playSound(linkedPortal.getWarpLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0F, 0.5F);
+        }
+        //only allow passengers through (without minecart)
+        else{
+            for(Entity passenger : passengers) {
+                teleportEntity(passenger);
+            }
+        }
     }
 
     public void teleport() {
@@ -170,7 +179,7 @@ public class Portal implements Comparable<Portal> {
     }
 
     private boolean teleportEntity(Entity entity){
-        if (ColorPortals.getPlugin().getEntityListener().entityCanBeTeleported(entity)) {
+        if (ColorPortals.getPlugin().getEntityListener().entityCanBeTeleported(entity, this)) {
             ColorPortals.getPlugin().getEntityListener().addNoTeleportEntity(entity);
             if(entity instanceof Minecart)
                 entity.teleport(this.linkedPortal.getCartWarpLocation());

@@ -9,10 +9,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.WallSign;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Minecart;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -47,8 +44,10 @@ public class EntityListener implements Listener {
                     event.getPlayer().sendMessage(ChatColor.RED + "Your portal's frame is either not complete or it is missing the button and/or pressure plate.");
                     return;
                 }
-                if (plugin.getUsePerms() && !event.getPlayer().hasPermission("colorportals.create")) {
-                    event.getPlayer().sendMessage(ChatColor.DARK_RED + "You are not authorized to create portals");
+                DyeColor color = plugin.getBukkitUtils().getWoolColor(attachedBlock);
+                String colorString = color.toString().toLowerCase();
+                if (plugin.getUsePerms() && !(event.getPlayer().hasPermission("colorportals.create.*") || event.getPlayer().hasPermission("colorportals.create."+colorString))) {
+                    event.getPlayer().sendMessage(ChatColor.DARK_RED + "You are not authorized to create "+colorString+" portals");
                     event.setCancelled(true);
                     return;
                 }
@@ -79,7 +78,6 @@ public class EntityListener implements Listener {
                     return;
                 }
 
-                DyeColor color = plugin.getBukkitUtils().getWoolColor(attachedBlock);
                 if (!plugin.getPortalListener().checkPortalDistance(attachedBlock.getLocation(), event.getPlayer(), channel, color)) {
                     event.setCancelled(true);
                     return;
@@ -117,8 +115,9 @@ public class EntityListener implements Listener {
         //}
 
         if (portal != null) {
-            if (plugin.getUsePerms() && !event.getPlayer().hasPermission("colorportals.destroy")) {
-                player.sendMessage(ChatColor.DARK_RED + "You are not authorized to destroy portals");
+            String colorString = portal.getColor().toString().toLowerCase();
+            if (plugin.getUsePerms() && !(player.hasPermission("colorportals.destroy.*") || player.hasPermission("colorportals.destroy."+colorString))) {
+                player.sendMessage(ChatColor.DARK_RED + "You are not authorized to destroy "+colorString+" portals");
                 event.setCancelled(true);
                 return;
             }
@@ -156,10 +155,12 @@ public class EntityListener implements Listener {
             return;
         if (portal.getLinkedPortal() == null)
             return;
-        if (!plugin.getUsePerms() || player.hasPermission("colorportals.use")) {
+        String colorString = portal.getColor().toString().toLowerCase();
+        if (plugin.getUsePerms() && !(event.getPlayer().hasPermission("colorportals.use.*") || event.getPlayer().hasPermission("colorportals.use."+colorString))) {
+            player.sendMessage(ChatColor.DARK_RED + "You are not authorized to use "+colorString+" portals");
+        }
+        else{
             portal.teleport();
-        } else {
-            player.sendMessage(ChatColor.DARK_RED + "You are not authorized to use portals");
         }
     }
 
@@ -188,10 +189,13 @@ public class EntityListener implements Listener {
             return;
         if (portal.getLinkedPortal() == null)
             return;
-        if (!plugin.getUsePerms() || player.hasPermission("colorportals.use")) {
+
+        String colorString = portal.getColor().toString().toLowerCase();
+        if (plugin.getUsePerms() && !(event.getPlayer().hasPermission("colorportals.use.*") || event.getPlayer().hasPermission("colorportals.use."+colorString))) {
+            player.sendMessage(ChatColor.DARK_RED + "You are not authorized to use "+colorString+" portals");
+        }
+        else{
             portal.teleport();
-        } else {
-            player.sendMessage(ChatColor.DARK_RED + "You are not authorized to use portals");
         }
     }
 
@@ -291,10 +295,12 @@ public class EntityListener implements Listener {
         if (portal.getLinkedPortal() == null)
             return;
 
-        if (!plugin.getUsePerms() || player.hasPermission("colorportals.use")) {
+        String colorString = portal.getColor().toString().toLowerCase();
+        if (plugin.getUsePerms() && !(player.hasPermission("colorportals.use.*") || player.hasPermission("colorportals.use."+colorString))) {
+            player.sendMessage(ChatColor.DARK_RED + "You are not authorized to use "+colorString+" portals");
+        }
+        else{
             portal.teleport();
-        } else {
-            player.sendMessage(ChatColor.DARK_RED + "You are not authorized to use portals (even with arrows)");
         }
     }
 
@@ -307,7 +313,25 @@ public class EntityListener implements Listener {
         }, 5L);
     }
 
-    public boolean entityCanBeTeleported(Entity entity) {
-        return noTeleportEntities.get(entity.getUniqueId()) == null;
+    public boolean entityCanBeTeleported(Entity entity, Portal fromPortal) {
+        if(noTeleportEntities.get(entity.getUniqueId()) != null)
+            return false;
+
+        if(plugin.getAllowMobs() == false && entity instanceof Mob)
+            return false;
+
+        if(plugin.getAllowItems() == false && entity instanceof Item)
+            return false;
+
+        if(entity instanceof Player){
+            Player player = (Player)entity;
+            String colorString = fromPortal.getColor().toString().toLowerCase();
+            if (plugin.getUsePerms() && !(player.hasPermission("colorportals.use.*") ||player.hasPermission("colorportals.use."+colorString))) {
+                player.sendMessage(ChatColor.DARK_RED + "You are not authorized to use "+colorString+" portals");
+                return false;
+            }
+        }
+
+        return true;
     }
 }
